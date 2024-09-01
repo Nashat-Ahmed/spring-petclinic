@@ -1,35 +1,67 @@
 pipeline {
-  agent any
-  stages {
-    stage('Build') {
-      steps {
-        script {
-          sh 'docker build -t nashaat111/webapp:1.3 .'
-        }
-      }
-    }
-    stage('Test') {
-      steps {
-        script {
-          sh 'docker run --rm nashaat111/webapp:1.3 npm test'
-        }
-      }
-    }
-    stage('Deploy') {
-      steps {
-        script {
-          sh 'docker run -d -p 3000:3000 nashaat111/webapp:1.3'
-        }
-      }
-    }
-    stage('Pushing to dockerhup') {
-      steps {
-        script {
-          sh 'docker push nashaat111/webapp:1.3'
-        }
-      }
+    agent any
+
+    environment {
+        DOCKER_HUB_REPO = 'nashaat111/spring-petclinic'
+        DOCKER_CREDENTIALS_ID = 'nashaat111'  
     }
 
-  }
+    stages {
+        stage('Checkout Code') {
+            steps {
+                // Cloning the repository
+                git 'https://github.com/spring-projects/spring-petclinic.git'
+            }
+        }
+
+        stage('Build Application') {
+            steps {
+                // Use Maven to build the application
+                sh 'mvn clean package'
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                script {
+                    // Build Docker image
+                    sh 'docker build -t ${DOCKER_HUB_REPO}:latest .'
+                }
+            }
+        }
+
+        stage('Docker Login') {
+            steps {
+                script {
+                    // Login to Docker Hub
+                    withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS_ID}", passwordVariable: 'DOCKER_HUB_PASSWORD', usernameVariable: 'DOCKER_HUB_USERNAME')]) {
+                        sh 'echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_USERNAME" --password-stdin'
+                    }
+                }
+            }
+        }
+
+        stage('Docker Push') {
+            steps {
+                script {
+                    // Push Docker image to Docker Hub
+                    sh 'docker push ${DOCKER_HUB_REPO}:latest'
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            // Cleanup Docker images to free space
+            sh 'docker rmi ${DOCKER_HUB_REPO}:latest || true'
+        }
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed.'
+        }
+    }
 }
 
