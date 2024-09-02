@@ -6,6 +6,7 @@ pipeline {
         DOCKER_CREDENTIALS_ID = 'nashaat111'  
     }
 
+    stages {
         stage('Build Application') {
             steps {
                 // Use Maven to build the application
@@ -56,4 +57,3 @@ pipeline {
         }
     }
 }
-
