@@ -6,14 +6,6 @@ pipeline {
         DOCKER_CREDENTIALS_ID = 'nashaat111'  
     }
 
-    stages {
-        stage('Checkout Code') {
-            steps {
-                // Cloning the repository
-                git 'https://github.com/spring-projects/spring-petclinic.git'
-            }
-        }
-
         stage('Build Application') {
             steps {
                 // Use Maven to build the application
