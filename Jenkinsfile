@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKER_HUB_REPO = 'nashaat111/spring-petclinic'
-        DOCKER_CREDENTIALS_ID = 'nashaat111'  
+        DOCKER_CREDENTIALS_ID = 'docker-hub-repo'  
     }
 
     stages {
