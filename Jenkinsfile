@@ -20,7 +20,7 @@ pipeline {
             steps {
                 script {
                     // Build Docker image using Docker Compose
-                    sh 'docker-compose build'
+                    sh 'sh 'docker build -t ${DOCKER_HUB_REPO}:latest .'
                 }
             }
         }
@@ -52,6 +52,8 @@ pipeline {
                     sshagent(['ec2-server-key']) {
                         sh """
                         ssh -o StrictHostKeyChecking=no ${DEPLOY_USER}@${DEPLOY_SERVER} '
+                        scp docker-compose.yml ec2-user@52.87.183.200:/home/ec2-user
+
                             docker-compose -f -d docker-compose.yml up
                         '
                         """
