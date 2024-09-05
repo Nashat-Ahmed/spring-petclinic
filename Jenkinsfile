@@ -3,7 +3,9 @@ pipeline {
 
     environment {
         DOCKER_HUB_REPO = 'nashaat111/spring-petclinic'
-        DOCKER_CREDENTIALS_ID = 'docker-hub-repo'  
+        DOCKER_CREDENTIALS_ID = 'docker-hub-repo'
+        DEPLOY_SERVER = '44.204.4.75'  
+        DEPLOY_USER = 'ec2-user'           
     }
 
     stages {
@@ -39,6 +41,19 @@ pipeline {
                 script {
                     // Push Docker image to Docker Hub
                     sh 'docker push ${DOCKER_HUB_REPO}:latest'
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                script {
+                    // Deploy the Docker image to the remote server
+                    sshagent(['ec2-server-key']) {  
+                        sh """
+                        ssh -o StrictHostKeyChecking=no ${DEPLOY_USER}@${DEPLOY_SERVER} 'docker pull ${DOCKER_HUB_REPO}:latest && docker stop petclinic || true && docker rm petclinic || true && docker run -d --name petclinic -p 8080:8080 ${DOCKER_HUB_REPO}:latest'
+                        """
+                    }
                 }
             }
         }
