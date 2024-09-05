@@ -52,8 +52,7 @@ pipeline {
                     sshagent(['ec2-server-key']) {
                         sh """
                         ssh -o StrictHostKeyChecking=no ${DEPLOY_USER}@${DEPLOY_SERVER} '
-                            docker-compose pull &&
-                            docker-compose up -d --remove-orphans
+                            docker-compose -f -d docker-compose.yml up
                         '
                         """
                     }
