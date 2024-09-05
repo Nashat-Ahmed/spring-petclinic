@@ -19,8 +19,8 @@ pipeline {
         stage('Docker Build') {
             steps {
                 script {
-                    // Build Docker image using Docker Compose
-                    sh 'sh 'docker build -t ${DOCKER_HUB_REPO}:latest .'
+                    // Build Docker image using Dockerfile
+                    sh "docker build -t ${DOCKER_HUB_REPO}:latest ."
                 }
             }
         }
@@ -40,7 +40,7 @@ pipeline {
             steps {
                 script {
                     // Push Docker image to Docker Hub
-                    sh 'docker push ${DOCKER_HUB_REPO}:latest'
+                    sh "docker push ${DOCKER_HUB_REPO}:latest"
                 }
             }
         }
@@ -51,10 +51,9 @@ pipeline {
                     // Deploy using Docker Compose
                     sshagent(['ec2-server-key']) {
                         sh """
+                        scp docker-compose.yml ${DEPLOY_USER}@${DEPLOY_SERVER}:/home/${DEPLOY_USER}/docker-compose.yml
                         ssh -o StrictHostKeyChecking=no ${DEPLOY_USER}@${DEPLOY_SERVER} '
-                        scp docker-compose.yml ec2-user@52.87.183.200:/home/ec2-user
-
-                            docker-compose -f -d docker-compose.yml up
+                            docker-compose -f /home/${DEPLOY_USER}/docker-compose.yml up -d --remove-orphans
                         '
                         """
                     }
@@ -66,7 +65,7 @@ pipeline {
     post {
         always {
             // Cleanup Docker images to free space
-            sh 'docker rmi ${DOCKER_HUB_REPO}:latest || true'
+            sh "docker rmi ${DOCKER_HUB_REPO}:latest || true"
         }
         success {
             echo 'Pipeline completed successfully!'
