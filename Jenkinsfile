@@ -3,7 +3,9 @@ pipeline {
 
     environment {
         DOCKER_HUB_REPO = 'nashaat111/spring-petclinic'
-        DOCKER_CREDENTIALS_ID = 'docker-hub-repo'  
+        DOCKER_CREDENTIALS_ID = 'docker-hub-repo'
+        DEPLOY_SERVER = '52.87.183.200'
+        DEPLOY_USER = 'ec2-user'
     }
 
     stages {
@@ -17,8 +19,8 @@ pipeline {
         stage('Docker Build') {
             steps {
                 script {
-                    // Build Docker image
-                    sh 'docker build -t ${DOCKER_HUB_REPO}:latest .'
+                    // Build Docker image using Docker Compose
+                    sh 'docker-compose build'
                 }
             }
         }
@@ -39,6 +41,22 @@ pipeline {
                 script {
                     // Push Docker image to Docker Hub
                     sh 'docker push ${DOCKER_HUB_REPO}:latest'
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                script {
+                    // Deploy using Docker Compose
+                    sshagent(['ec2-server-key']) {
+                        sh """
+                        ssh -o StrictHostKeyChecking=no ${DEPLOY_USER}@${DEPLOY_SERVER} '
+                            docker-compose pull &&
+                            docker-compose up -d --remove-orphans
+                        '
+                        """
+                    }
                 }
             }
         }
