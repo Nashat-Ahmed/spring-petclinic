@@ -49,7 +49,10 @@ pipeline {
                     // Deploy using Docker Compose
                     def dcokerComposeCmd = "docker-compose -f docker-compose.yml up --detach"
                     sshagent(['ec2-server-key']) {
-                        sh "ssh  ec2-user@35.170.182.83 ${dockerComposeCmd}"
+                    sh '''    
+                    scp -o StrictHostKeyChecking=no docker-compose.yml ec2-user@35.170.182.83:/home/ec2-user/docker-compose.yml
+                    ssh  ec2-user@35.170.182.83 ${dockerComposeCmd}
+                     '''
                     }
                 }
             }
