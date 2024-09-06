@@ -4,7 +4,7 @@ pipeline {
     environment {
         DOCKER_HUB_REPO = 'nashaat111/spring-petclinic'
         DOCKER_CREDENTIALS_ID = 'docker-hub-repo'
-        DEPLOY_SERVER = '52.87.183.200'
+        DEPLOY_SERVER = '35.170.182.83'
         DEPLOY_USER = 'ec2-user'
     }
 
