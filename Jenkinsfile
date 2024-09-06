@@ -4,8 +4,6 @@ pipeline {
     environment {
         DOCKER_HUB_REPO = 'nashaat111/spring-petclinic'
         DOCKER_CREDENTIALS_ID = 'docker-hub-repo'
-        DEPLOY_SERVER = '35.170.182.83'
-        DEPLOY_USER = 'ec2-user'
     }
 
     stages {
@@ -49,13 +47,10 @@ pipeline {
             steps {
                 script {
                     // Deploy using Docker Compose
+                    def dcokerComposeCmd = "docker-compose -f docker-compose.yml up --detach"
                     sshagent(['ec2-server-key']) {
-                        sh """
-                        scp docker-compose.yml ${DEPLOY_USER}@${DEPLOY_SERVER}:/home/${DEPLOY_USER}/docker-compose.yml
-                        ssh -o StrictHostKeyChecking=no ${DEPLOY_USER}@${DEPLOY_SERVER} '
-                            docker-compose -f /home/${DEPLOY_USER}/docker-compose.yml up -d --remove-orphans
-                        '
-                        """
+                        sh "scp docker-compose.yml ec2-user@35.170.182.83:/home/ec2-user"
+                        sh "ssh -o StrictHostKeyChecking=no ec2-user@35.170.182.83 ${dockerComposeCmd}"
                     }
                 }
             }
